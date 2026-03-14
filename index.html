@@ -59,7 +59,7 @@
             if (userIP) {
                 // Auto-fix common mistakes
                 if (!userIP.startsWith("http")) userIP = "http://" + userIP;
-                if (!userIP.includes(":8080")) userIP = userIP + ":8080";
+            
                 
                 phoneIP = userIP;
                 localStorage.setItem('phyphoxIP', userIP);
