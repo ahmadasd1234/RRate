@@ -1,1 +1,79 @@
 # RRate
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Heart/Swing Monitor</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            text-align: center; 
+            background-color: #f0f8ff; 
+            color: #333;
+            padding: 40px;
+        }
+        h1 { font-size: 3rem; margin-bottom: 10px; }
+        .big-text { font-size: 5rem; font-weight: bold; color: #d9534f; margin: 40px 0; }
+        .status-box { font-size: 1.5rem; padding: 10px; border-radius: 10px; display: inline-block; }
+        .connected { background-color: #dff0d8; color: #3c763d; }
+        .disconnected { background-color: #f2dede; color: #a94442; }
+        button { 
+            font-size: 2rem; 
+            padding: 20px 40px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 15px; 
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:active { background-color: #0056b3; transform: translateY(2px); }
+    </style>
+</head>
+<body>
+
+    <h1>Movement Monitor</h1>
+    
+    <div id="status" class="status-box disconnected">Step 1: Open the App on Phone</div>
+    
+    <div class="big-text" id="result">--</div>
+    
+    <button onclick="start()">Press to Start</button>
+
+    <script>
+        // You could even use a prompt to let them type the IP once
+        let phoneIP = "http://192.168.1.50:8080"; 
+
+        async function start() {
+            document.getElementById('status').innerText = "Connecting...";
+            setInterval(getData, 500);
+        }
+
+        async function getData() {
+            try {
+                const response = await fetch(`${phoneIP}/get?x`);
+                const data = await response.json();
+                const signal = data.buffer.x.buffer;
+                
+                document.getElementById('status').innerText = "Connected & Working";
+                document.getElementById('status').className = "status-box connected";
+                
+                // Simplified calculation for them
+                processData(signal);
+            } catch (e) {
+                document.getElementById('status').innerText = "Error: Is the phone app open?";
+                document.getElementById('status').className = "status-box disconnected";
+            }
+        }
+
+        function processData(arr) {
+            // Logic to update the "result" div with a very large number
+            // (Insert your period math here)
+            document.getElementById('result').innerText = "1.2 Seconds"; 
+        }
+    </script>
+</body>
+</html>
