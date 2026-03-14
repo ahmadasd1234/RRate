@@ -56,16 +56,7 @@
 
         function setupIP() {
             let userIP = prompt("Enter the address shown in Phyphox:", phoneIP);
-            if (userIP) {
-                // Auto-fix common mistakes
-                if (!userIP.startsWith("http")) userIP = "http://" + userIP;
             
-                
-                phoneIP = userIP;
-                localStorage.setItem('phyphoxIP', userIP);
-                alert("Setup Complete!");
-            }
-        }
 
         async function startApp() {
             document.getElementById('status').innerText = "Connecting...";
