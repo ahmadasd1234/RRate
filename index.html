@@ -5,33 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Easy Movement Monitor</title>
     <style>
-        /* High contrast colors and giant text for accessibility */
-        body { 
-            font-family: 'Arial', sans-serif; 
-            text-align: center; 
-            background-color: #FFFFE0; /* Light yellow is easier on the eyes */
-            color: #000;
-            padding: 20px;
-        }
+        body { font-family: Arial; text-align: center; background-color: #FFFFE0; padding: 20px; }
         h1 { font-size: 2.5rem; }
-        .result-box { 
-            font-size: 5rem; 
-            font-weight: bold; 
-            margin: 30px 0; 
-            padding: 20px;
-            border: 5px solid #000;
-            background: #white;
-        }
+        .result-box { font-size: 5rem; font-weight: bold; margin: 30px 0; padding: 20px; border: 5px solid #000; background: white; }
         .status { font-size: 1.5rem; margin-bottom: 20px; font-weight: bold; }
-        button { 
-            font-size: 2rem; 
-            padding: 25px 50px; 
-            margin: 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            width: 90%;
-            max-width: 400px;
-        }
+        button { font-size: 2rem; padding: 20px; margin: 10px; border-radius: 20px; cursor: pointer; width: 90%; max-width: 400px; }
         .btn-start { background-color: #28a745; color: white; border: none; }
         .btn-setup { background-color: #6c757d; color: white; border: none; font-size: 1.2rem; }
     </style>
@@ -39,9 +17,7 @@
 <body>
 
     <h1>Movement Tracker</h1>
-
     <div id="status" class="status" style="color: red;">Not Connected</div>
-    
     <div class="result-box" id="displayValue">--</div>
     <p style="font-size: 1.5rem;">Seconds per Cycle</p>
 
@@ -50,43 +26,52 @@
     <button class="btn-setup" onclick="setupIP()">⚙ Setup Phone Connection</button>
 
     <script>
-        // Use the saved IP or default to a placeholder
-        let phoneIP = localStorage.getItem('phyphoxIP') || "http://10.0.0.173";
+        // Use the saved IP or default. MUST include http:// and the port (8080)
+        let phoneIP = localStorage.getItem('phyphoxIP') || "http://10.0.0.173:8080";
         let pollingInterval;
 
         function setupIP() {
             let userIP = prompt("Enter the address shown in Phyphox:", phoneIP);
-            
+            if (userIP) {
+                phoneIP = userIP;
+                localStorage.setItem('phyphoxIP', userIP);
+                alert("IP updated to: " + phoneIP);
+            }
+        }
 
         async function startApp() {
+            console.log("Start button pressed.");
             document.getElementById('status').innerText = "Connecting...";
             document.getElementById('status').style.color = "orange";
             
-            // Clear any old timer and start fresh
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(fetchData, 500);
         }
-        }
+
         async function fetchData() {
             try {
-                // Fetching the 'x' buffer from your phyphox experiment
+                // Testing the actual network request
                 const response = await fetch(`${phoneIP}/get?x`);
-                const data = await response.json();
-                const signal = data.buffer.x.buffer;
+                if (!response.ok) throw new Error("Server not responding");
 
-                if (signal && signal.length > 0) {
+                const data = await response.json();
+                
+                // Navigate the Phyphox JSON structure
+                if (data.buffer && data.buffer.x && data.buffer.x.buffer) {
+                    const signal = data.buffer.x.buffer;
                     document.getElementById('status').innerText = "● Connected";
                     document.getElementById('status').style.color = "green";
                     calculatePeriod(signal);
                 }
             } catch (err) {
-                document.getElementById('status').innerText = "Connection Failed. Click Setup.";
+                console.error("Fetch Error:", err);
+                document.getElementById('status').innerText = "Connection Failed. Check IP.";
                 document.getElementById('status').style.color = "red";
             }
         }
 
         function calculatePeriod(arr) {
-            // Find average to detect 'zero crossings'
+            if (!arr || arr.length === 0) return;
             const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
             let crossings = 0;
 
@@ -96,8 +81,6 @@
                 }
             }
 
-            // Period (T) calculation based on crossing count
-            // We assume a 10-second buffer window from phyphox for this math
             if (crossings > 2) {
                 let cycles = crossings / 2;
                 let period = (10 / cycles).toFixed(2); 
